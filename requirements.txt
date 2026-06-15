@@ -1,0 +1,33 @@
+# Core AI / LLM
+google-genai>=1.26.0
+groq>=1.4.0
+
+# Orchestration
+langgraph>=0.5.0
+langgraph-checkpoint>=2.1.0
+
+# Validation
+pydantic>=2.12.5
+
+# Image / PDF processing
+PyMuPDF>=1.26.0
+opencv-python-headless>=4.11.0.86
+Pillow>=11.0.0
+
+# NLP / string matching
+jellyfish>=1.2.1
+
+# Portal
+streamlit>=1.46.1
+pandas>=2.2.0
+
+# Env / config
+python-dotenv>=1.1.0
+
+# Testing & type-checking
+pytest>=8.4.0
+pytest-asyncio>=1.0.0
+mypy>=2.1.0
+
+# Utilities
+numpy>=2.0.0
