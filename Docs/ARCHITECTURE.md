@@ -10,31 +10,35 @@ The system is split into two distinct, coupled halves:
 
 ## System Architecture Diagram
 
-```mermaid
+
+    ```mermaid
 graph TD
-    START([Submit ClaimInput]) --> fan_out{Parallel Fan-out}
-    fan_out -- "For each doc" --> process_doc["process_document_node<br>(Classifier -> Quality -> Extractor)"]
-    process_doc --> fan_in[Fan-in Aggregator Node]
+    START[START] -->|doc_fan_out| process_document_node[process_document_node<br>Classifier, Quality, Extractor]
+    process_document_node --> aggregate_subgraph_results[aggregate_subgraph_results<br>Fan-in Aggregator]
+    aggregate_subgraph_results --> validate_set_node[validate_set_node<br>Exit 1: Document Set Validator]
     
-    fan_in --> validate_set{validate_set_node<br>(Exit 1: Document Set Validator)}
+    validate_set_node -->|route_after_validate| route_val{route_after_validate}
+    route_val -->|Missing required docs| END[END]
+    route_val -->|Docs present| quality_gate_node[quality_gate_node<br>Exit 2: Quality Gate]
     
-    validate_set -- "Missing required docs" --> early_stop[Early Stop Outcome]
-    validate_set -- "Docs Present" --> quality_gate{quality_gate_node<br>(Exit 2: Quality Gate)}
+    quality_gate_node -->|route_after_quality_gate| route_qual{route_after_quality_gate}
+    route_qual -->|Any unreadable doc| END
+    route_qual -->|All readable| consistency_node[consistency_node<br>Exit 3: Consistency Checker]
     
-    quality_gate -- "Any unreadable doc" --> early_stop
-    quality_gate -- "All readable" --> consistency{consistency_node<br>(Exit 3: Consistency Checker)}
+    consistency_node -->|interrupt_after| hitl_check{Is Interrupted?}
+    hitl_check -->|Yes: similarity 0.75 - 0.85| hitl[HUMAN_OVERRIDE / Adjuster Input]
+    hitl_check -->|No: clear pass or fail| route_cons{route_after_consistency}
     
-    consistency -- "Name mismatch similarity < 0.75" --> early_stop
-    consistency -- "Name similarity 0.75 - 0.85" --> hitl[HUMAN_OVERRIDE / Adjuster Input]
-    consistency -- "Name similarity >= 0.85" --> policy_engine[policy_node]
+    hitl -->|Approve & Resume| route_cons
+    hitl -->|Reject Claim| END
     
-    hitl -- "Resume with corrected name" --> policy_engine
+    route_cons -->|Name mismatch similarity < 0.75| END
+    route_cons -->|Name similarity >= 0.85| policy_node[policy_node<br>Deterministic Policy Engine]
     
-    policy_engine --> fraud_agent[fraud_node<br>(Fraud Same-Day Claims Check)]
-    fraud_agent --> END([ClaimResponse Output])
-    
-    early_stop --> END
+    policy_node --> fraud_node[fraud_node<br>Fraud Same-Day Claims Check]
+    fraud_node --> END
 ```
+   
 
 ---
 
