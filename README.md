@@ -68,35 +68,6 @@ A production-grade, auditable insurance claims processing engine built on a **La
 
 
 
-```mermaid
-graph TD
-    START[START] -->|doc_fan_out| process_document_node[process_document_node<br>Classifier, Quality, Extractor]
-    process_document_node --> aggregate_subgraph_results[aggregate_subgraph_results<br>Fan-in Aggregator]
-    aggregate_subgraph_results --> validate_set_node[validate_set_node<br>Exit 1: Document Set Validator]
-    
-    validate_set_node -->|route_after_validate| route_val{route_after_validate}
-    route_val -->|Missing required docs| END[END]
-    route_val -->|Docs present| quality_gate_node[quality_gate_node<br>Exit 2: Quality Gate]
-    
-    quality_gate_node -->|route_after_quality_gate| route_qual{route_after_quality_gate}
-    route_qual -->|Any unreadable doc| END
-    route_qual -->|All readable| consistency_node[consistency_node<br>Exit 3: Consistency Checker]
-    
-    consistency_node -->|interrupt_after| hitl_check{Is Interrupted?}
-    hitl_check -->|Yes: similarity 0.75 - 0.85| hitl[HUMAN_OVERRIDE / Adjuster Input]
-    hitl_check -->|No: clear pass or fail| route_cons{route_after_consistency}
-    
-    hitl -->|Approve & Resume| route_cons
-    hitl -->|Reject Claim| END
-    
-    route_cons -->|Name mismatch similarity < 0.75| END
-    route_cons -->|Name similarity >= 0.85| policy_node[policy_node<br>Deterministic Policy Engine]
-    
-    policy_node --> fraud_node[fraud_node<br>Fraud Same-Day Claims Check]
-    fraud_node --> END
-```
-
-
 ```
 
 **Two clearly separated halves:**
