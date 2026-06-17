@@ -10,8 +10,7 @@ The system is split into two distinct, coupled halves:
 
 ## System Architecture Diagram
 
-
-    ```mermaid
+```mermaid
 graph TD
     START[START] -->|doc_fan_out| process_document_node[process_document_node<br>Classifier, Quality, Extractor]
     process_document_node --> aggregate_subgraph_results[aggregate_subgraph_results<br>Fan-in Aggregator]
